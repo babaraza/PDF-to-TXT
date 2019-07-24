@@ -17,17 +17,26 @@ pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tessera
 source_dir = Path()
 source_files = source_dir.glob('*.pdf')  # Search for all pdf files
 
+
+# Go through each JPG file, perform OCR on it, save as text file
+def ocr_file(origfile):
+    print("Applying OCR on PDF")
+    for image in source_dir.glob(f'{origfile}*.jpg'):
+        text = pytesseract.image_to_string(PIL_Image.open(image))
+        filename = '{}.txt'.format(origfile)
+        # 'a' mode allows us to append to text file
+        with open(filename, 'a') as txt:
+            txt.write(text)
+
+
 # Go through each pdf file and convert to JPG
 for file in source_files:
     with Image(filename=str(file), resolution=200) as pdf:
+        print("Converting PDF to JPG")
         pdf.compression_quality = 99
         pdf.format = 'jpg'
-        pdf.save(filename=file.stem+'.'+pdf.format)  # file stem is name of file without ext
-
-# Go through each JPG file, perform OCR on it, save as text file
-for image in source_dir.glob('*.jpg'):
-    text = pytesseract.image_to_string(PIL_Image.open(image))
-    with open('Converted.txt', 'a') as txt:  # 'a' mode allows us to append to text file
-        txt.write(text)
+        # file stem is name of file without ext
+        pdf.save(filename="{}.{}".format(file.stem, pdf.format))
+        ocr_file(file.stem)
 
 print("Done")
