@@ -11,20 +11,23 @@ from pathlib import Path
 # pip install pillow
 # pip install pytesseract
 
+# Show where Tesseract is installed for pytesseract to work
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
 source_dir = Path()
-source_files = source_dir.glob('*.pdf')
+source_files = source_dir.glob('*.pdf')  # Search for all pdf files
 
+# Go through each pdf file and convert to JPG
 for file in source_files:
     with Image(filename=str(file), resolution=200) as pdf:
         pdf.compression_quality = 99
         pdf.format = 'jpg'
-        pdf.save(filename=file.stem+'.'+pdf.format)
+        pdf.save(filename=file.stem+'.'+pdf.format)  # file stem is name of file without ext
 
+# Go through each JPG file, perform OCR on it, save as text file
 for image in source_dir.glob('*.jpg'):
     text = pytesseract.image_to_string(PIL_Image.open(image))
-    with open('Converted.txt', 'a') as txt:
+    with open('Converted.txt', 'a') as txt:  # 'a' mode allows us to append to text file
         txt.write(text)
 
 print("Done")
