@@ -25,20 +25,28 @@ def get_files():
             print("Converting PDF to JPG")
             img.compression_quality = 99
             img.format = 'jpg'
-            # file stem is name of file without ext
+            # Saving jpg with the same name as the source pdf file
+            # File stem is name of file without extension
             img.save(filename="{}.{}".format(file.stem, img.format))
+            # Sending filename of the pdf file to next function
+            # Since images will have the same name
             ocr_file(file.stem)
 
 
 # Go through each JPG file, perform OCR on it, save as text file
 def ocr_file(orig_filename):
     print("Applying OCR on JPG (s)")
+    # Using source pdf file name to search for same named images
     for image in source_dir.glob(f'{orig_filename}*.jpg'):
+        # Using Wand to open jpg, casting into Pillow
+        # Since pytesseract accepts PIL images
         text = pytesseract.image_to_string(PIL_Image.open(image))
+        # Creating text file with the same name as source pdf
         filename = '{}.txt'.format(orig_filename)
         # 'a' mode allows us to append to text file
         with open(filename, "a") as txt:
             txt.write(f'{text}\n\n')
+    # Asking to delete temporarily created JPG(s)
     if input("Delete JPG(s)? > ").lower() == "y":
         print("Deleting Temporary Images")
         for temp_img in source_dir.glob('*.jpg'):
