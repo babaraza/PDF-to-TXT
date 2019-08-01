@@ -15,32 +15,55 @@ import cv2
 # pip install numpy
 # pip install opencv-python
 
-# Show where Tesseract is installed for pytesseract to work
+# Set where Tesseract is installed for pytesseract to work
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+source_dir = Path()  # Setting Path to the app directory
+final_text = []  # Empty array to hold the OCR data
 
-source_dir = Path()
-source_files = source_dir.glob('*.pdf')  # Search for all pdf files
 
-# to avoid creating and deleting a temporary file for each image we use numpy and OpenCV
-# to extract the image as a blob, convert it to a numpy array and then turn it into a PIL image
-# for pytesseract to perform OCR
+def get_files():
+    print("Finding all PDF files")
+    source_files = source_dir.glob('*.pdf')  # Search for all pdf files
 
-# TODO: Get Page 2 to work
+    for pdf_file in source_files:
+        print(f"Converting {pdf_file} into JPG sequence")
 
-req_image = []
-final_text = []
+        # Wand Image creates an image for each page of the pdf file as sequence
+        with Image(filename=str(pdf_file), resolution=200) as img:
 
-for file in source_files:
-    with Image(filename=str(file), resolution=200) as img:
-        for image in img.sequence:
-            image.format = 'jpg'
-            image.compression_quality = 99
-            img_page = Image(image=image)
-            img_buffer = np.asarray(bytearray(img_page.make_blob()))
-            img_data = cv2.imdecode(img_buffer, cv2.IMREAD_GRAYSCALE)
-            final_text.append(pytesseract.image_to_string(PI.fromarray(img_data)))
-    filename = '{}.txt'.format(file.stem)
+            # Going through each image[pdf file page] as SingleImage
+            print("Converting and applying OCR on each page")
+            for image in img.sequence:
+                image.format = 'jpg'
+                image.compression_quality = 99
+
+                # Convert SingleImage to Want Image
+                img_page = Image(image=image)
+
+                # Convert the Wand Image into a Blob, then into a Numpy Array
+                img_buffer = np.asarray(bytearray(img_page.make_blob()))
+
+                # Open Numpy Array image in CV2 and run grayscale filter
+                img_data = cv2.imdecode(img_buffer, cv2.IMREAD_GRAYSCALE)
+
+                # Convert the Numpy Array into a Pillow image for Pytesseract
+                final_text.append(pytesseract.image_to_string(PI.fromarray(img_data)))
+
+                # Add extra lines after each page
+                final_text.append('\n\n')
+
+        save_data(final_text, pdf_file)
+
+
+def save_data(ocr_data, pdf_file_name):
+    # Creating Text file with same name as the source pdf file
+    filename = '{}.txt'.format(pdf_file_name.stem)
+
+    print("Creating text file with OCR data")
+    # 'a' mode allows us to append to text file
     with open(filename, 'a') as txt:
-        txt.writelines(final_text)
+        txt.writelines(ocr_data)
+    print("Done")
 
-print("Done")
+
+get_files()
