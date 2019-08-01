@@ -1,5 +1,5 @@
 from wand.image import Image
-from PIL import Image as PIL_Image
+from PIL import Image as PI
 import pytesseract
 from pathlib import Path
 import numpy as np
@@ -27,17 +27,20 @@ source_files = source_dir.glob('*.pdf')  # Search for all pdf files
 
 # TODO: Get Page 2 to work
 
-text = []
+req_image = []
+final_text = []
 
 for file in source_files:
     with Image(filename=str(file), resolution=200) as img:
-        img.format = 'jpg'
-        img.compression_quality = 99
-        img_buffer = np.asarray(bytearray(img.make_blob()))
-        img_data = cv2.imdecode(img_buffer, cv2.IMREAD_GRAYSCALE)
-        text.append(pytesseract.image_to_string(PIL_Image.fromarray(img_data)))
-        filename = '{}.txt'.format(file.stem)
+        for image in img.sequence:
+            image.format = 'jpg'
+            image.compression_quality = 99
+            img_page = Image(image=image)
+            img_buffer = np.asarray(bytearray(img_page.make_blob()))
+            img_data = cv2.imdecode(img_buffer, cv2.IMREAD_GRAYSCALE)
+            final_text.append(pytesseract.image_to_string(PI.fromarray(img_data)))
+    filename = '{}.txt'.format(file.stem)
     with open(filename, 'a') as txt:
-        txt.writelines(text)
+        txt.writelines(final_text)
 
 print("Done")
