@@ -63,7 +63,8 @@ def save_data(ocr_data, pdf_file_name):
     # 'a' mode allows us to append to text file
     with open(filename, 'a') as txt:
         txt.writelines(ocr_data)
-    print("Done")
+    print("\n")
 
 
 get_files()
+print("Done")
