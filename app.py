@@ -37,7 +37,7 @@ def get_files():
                 image.format = 'jpg'
                 image.compression_quality = 99
 
-                # Convert SingleImage to Want Image
+                # Convert SingleImage to Wand Image
                 img_page = Image(image=image)
 
                 # Convert the Wand Image into a Blob, then into a Numpy Array
